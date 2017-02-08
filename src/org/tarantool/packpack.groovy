@@ -15,6 +15,10 @@ import groovy.transform.Field
     [OS: 'debian', DIST: 'stretch', PACK: 'deb'],
 ]
 
+@NonCPS
+def printParams() {
+  env.getEnvironment().each { name, value -> println "Name: $name -> Value $value" }
+}
 
 def packpackBuildClosure(src_stash, params, failed) {
     return {
@@ -69,6 +73,8 @@ def packpackBuildMatrix(dst_stash, matrix=default_matrix) {
     }
     catch(e) {
         echo "failed steps: ${failed}"
+        printParams()
+        throw e
     }
 
     node {
