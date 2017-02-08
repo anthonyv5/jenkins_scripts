@@ -16,27 +16,34 @@ import groovy.transform.Field
 ]
 
 
-def packpackBuildClosure(src_stash, params) {
+def packpackBuildClosure(src_stash, params, failed) {
     return {
         node {
             ws {
-                deleteDir()
-                unstash src_stash
-                dir('packpack') {
-                    git url: 'https://github.com/packpack/packpack.git'
-                }
-                sh 'git submodule update --init'
+                try {
+                    deleteDir()
+                    unstash src_stash
+                    dir('packpack') {
+                        git url: 'https://github.com/packpack/packpack.git'
+                    }
+                    sh 'git submodule update --init'
 
-                withEnv(["OS=${params['OS']}",
-                         "DIST=${params['DIST']}",
-                         "PACK=${params['PACK']}"]) {
-                    sh 'echo building on $OS $DIST'
-                    sh './packpack/packpack'
-                }
+                    withEnv(["OS=${params['OS']}",
+                             "DIST=${params['DIST']}",
+                             "PACK=${params['PACK']}"]) {
+                        sh 'echo building on $OS $DIST'
+                        sh './packpack/packpack'
+                    }
 
-                dst_stash = "${src_stash}-result-${params['OS']}-${params['DIST']}"
-                dir('build') {
-                    stash dst_stash
+                    dst_stash = "${src_stash}-result-${params['OS']}-${params['DIST']}"
+                    dir('build') {
+                        stash dst_stash
+                    }
+                }
+                catch(e)
+                {
+                    failed << "${params['OS']}-${params['DIST']}"
+                    throw e
                 }
             }
         }
@@ -49,13 +56,20 @@ def packpackBuildMatrix(dst_stash, matrix=default_matrix) {
     src_stash = 'packpack-source'
     stash name: src_stash, useDefaultExcludes: false
 
+    failed = []
+
     for (int i = 0; i < matrix.size(); i++) {
         def params = matrix.get(i)
         def stepName = "${params['OS']}-${params['DIST']}"
-        stepsForParallel[stepName] = packpackBuildClosure(src_stash, params)
+        stepsForParallel[stepName] = packpackBuildClosure(src_stash, params, failed)
     }
 
-    parallel stepsForParallel
+    try {
+        parallel stepsForParallel
+    }
+    catch(e) {
+        echo "failed steps: ${failed}"
+    }
 
     node {
         ws {
