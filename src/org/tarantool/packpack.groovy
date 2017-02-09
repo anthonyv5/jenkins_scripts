@@ -20,6 +20,10 @@ def printParams() {
   env.getEnvironment().each { name, value -> println "Name: $name -> Value $value" }
 }
 
+def previousBuildStatus(){
+    return currentBuild.rawBuild.getPreviousBuild()?.getResult().toString()
+}
+
 def packpackBuildClosure(src_stash, params, failed) {
     return {
         node {
@@ -54,6 +58,52 @@ def packpackBuildClosure(src_stash, params, failed) {
     }
 }
 
+def sendEmail(is_success, failed_components) {
+    job_name = env.JOB_NAME
+    build_url = env.BUILD_URL
+    build_log = "${build_url}console"
+    changes_url = env.RUN_CHANGES_DISPLAY_URL
+    prev_status = previousBuildStatus()
+
+    if (prev_status == 'FAILURE' && is_success) {
+        subject = "Fixed: ${job_name}"
+
+        body = """
+                | Build log: ${build_log}
+                | Changes: ${changes_url}
+            """.stripMargin()
+
+        emailext body: body,
+                 recipientProviders: [[$class: 'DevelopersRecipientProvider'],
+                                      [$class: 'RequesterRecipientProvider']],
+                 subject: subject
+    }
+
+    if (!is_success)
+    {
+        if (prev_status == 'FAILURE') {
+            subject = "Still failing: ${job_name}"
+        }
+        else {
+            subject = "Failed: ${job_name}"
+        }
+
+        components_str = failed_components.join("\n")
+
+        body = """
+               |Failed components:
+               |${components_str}
+               |
+               | Build log: ${build_log}
+               | Changes: ${changes_url}
+        """.stripMargin()
+        emailext body: body,
+                 recipientProviders: [[$class: 'CulpritsRecipientProvider'],
+                                      [$class: 'RequesterRecipientProvider']],
+                 subject: subject
+    }
+}
+
 def packpackBuildMatrix(dst_stash, matrix=default_matrix) {
     def stepsForParallel = [:]
 
@@ -70,10 +120,10 @@ def packpackBuildMatrix(dst_stash, matrix=default_matrix) {
 
     try {
         parallel stepsForParallel
+        sendEmail(true, failed)
     }
     catch(e) {
-        echo "failed steps: ${failed}"
-        printParams()
+        sendEmail(false, failed)
         throw e
     }
 
