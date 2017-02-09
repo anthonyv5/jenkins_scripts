@@ -73,10 +73,13 @@ def sendEmail(is_success, failed_components) {
                 | Changes: ${changes_url}
             """.stripMargin()
 
-        emailext body: body,
-                 recipientProviders: [[$class: 'DevelopersRecipientProvider'],
-                                      [$class: 'RequesterRecipientProvider']],
-                 subject: subject
+        node {
+            emailext body: body,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider'],
+                                     [$class: 'RequesterRecipientProvider']],
+                subject: subject
+        }
+
     }
 
     if (!is_success)
@@ -97,10 +100,13 @@ def sendEmail(is_success, failed_components) {
                | Build log: ${build_log}
                | Changes: ${changes_url}
         """.stripMargin()
-        emailext body: body,
-                 recipientProviders: [[$class: 'CulpritsRecipientProvider'],
-                                      [$class: 'RequesterRecipientProvider']],
-                 subject: subject
+
+        node {
+            emailext body: body,
+                recipientProviders: [[$class: 'CulpritsRecipientProvider'],
+                                     [$class: 'RequesterRecipientProvider']],
+                subject: subject
+        }
     }
 }
 
