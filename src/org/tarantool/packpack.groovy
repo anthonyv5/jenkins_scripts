@@ -104,12 +104,15 @@ def sendEmail(is_success, failed_components) {
     }
 }
 
+def prepareSources() {
+    src_stash = 'packpack-source'
+    stash name: src_stash, useDefaultExcludes: false
+}
+
 def packpackBuildMatrix(dst_stash, matrix=default_matrix) {
     def stepsForParallel = [:]
 
     src_stash = 'packpack-source'
-    stash name: src_stash, useDefaultExcludes: false
-
     failed = []
 
     for (int i = 0; i < matrix.size(); i++) {
