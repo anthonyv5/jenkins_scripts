@@ -35,7 +35,7 @@ def packpackBuildClosure(src_stash, params, failed) {
                     dir('packpack') {
                         git url: 'https://github.com/packpack/packpack.git'
                     }
-                    sh 'git submodule update --init'
+                    sh 'git submodule update --init --recursive'
 
                     withEnv(["OS=${params['OS']}",
                              "DIST=${params['DIST']}",
