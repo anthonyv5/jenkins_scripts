@@ -1,5 +1,6 @@
 package org.tarantool;
 import groovy.transform.Field
+import com.cloudbees.groovy.cps.NonCPS
 
 @Field List default_matrix = [
     [OS: 'el', DIST: '6', PACK: 'rpm'],
@@ -113,6 +114,18 @@ def sendEmail(is_success, failed_components) {
 def prepareSources() {
     src_stash = 'packpack-source'
     stash name: src_stash, useDefaultExcludes: false
+}
+
+def filterMatrix(matrix, closure) {
+    def result = []
+
+    for (int i = 0; i < matrix.size(); i++) {
+        if (closure.call(matrix.get(i)))
+        {
+            result << matrix.get(i)
+        }
+    }
+    return result
 }
 
 def packpackBuildMatrix(dst_stash, matrix=default_matrix) {
