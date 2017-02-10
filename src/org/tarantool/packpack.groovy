@@ -3,7 +3,7 @@ import groovy.transform.Field
 
 @Field List default_matrix = [
     [OS: 'el', DIST: '6', PACK: 'rpm'],
-    [OS: 'el', DIST: '7', PACK: 'rpm'],
+    //[OS: 'el', DIST: '7', PACK: 'rpm'],
     [OS: 'fedora', DIST: '24', PACK: 'rpm'],
     [OS: 'fedora', DIST: '25', PACK: 'rpm'],
     [OS: 'fedora', DIST: 'rawhide', PACK: 'rpm'],
