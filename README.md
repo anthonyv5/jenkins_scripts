@@ -317,5 +317,5 @@ you'll loose the bonus of the simplified addition of new build OS-s.
 
 ## Credits
 
-Big thanks to [[https://www.cloudbees.com][CloudBees]] for creating
+Big thanks to [CloudBees](https://www.cloudbees.com) for creating
 Jenkins and being awesome in general.
