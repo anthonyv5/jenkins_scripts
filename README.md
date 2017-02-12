@@ -1,4 +1,7 @@
-![](/tarantool_jenkins.png?raw=true "")
+<p align="center">
+    <img src="/tarantool_jenkins.png" width="400"/>
+</p>
+
 
 # Packpack and Jenkins integration for Tarantool
 
