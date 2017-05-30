@@ -36,11 +36,13 @@ def packpackBuildClosure(src_stash, params, failed) {
                     }
                     sh 'git submodule update --init --recursive'
 
-                    withEnv(["OS=${params['OS']}",
-                             "DIST=${params['DIST']}",
-                             "PACK=${params['PACK']}"]) {
-                        sh 'echo building on $OS $DIST'
-                        sh './packpack/packpack'
+                    timeout(20) {
+                        withEnv(["OS=${params['OS']}",
+                                 "DIST=${params['DIST']}",
+                                 "PACK=${params['PACK']}"]) {
+                            sh 'echo building on $OS $DIST'
+                            sh './packpack/packpack'
+                        }
                     }
 
                     dst_stash = "${src_stash}-result-${params['OS']}-${params['DIST']}"
